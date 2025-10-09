@@ -59,7 +59,8 @@ export default {
     return {
       notifications: this.openmct.notifications.notifications,
       highest: this.openmct.notifications.highest,
-      showNotificationsOverlay: false
+      showNotificationsOverlay: false,
+      userClosedOverlay: false
     };
   },
   computed: {
@@ -77,10 +78,22 @@ export default {
     },
     toggleNotificationsList(flag) {
       this.showNotificationsOverlay = flag;
+      // If user explicitly opens the overlay, reset the userClosedOverlay flag
+      if (flag === true) {
+        this.userClosedOverlay = false;
+      }
+      // If user closes the overlay, set the userClosedOverlay flag
+      if (flag === false) {
+        this.userClosedOverlay = true;
+      }
     },
     updateNotifications() {
       this.notifications = this.openmct.notifications.notifications;
       this.highest = this.openmct.notifications.highest;
+      // If user has explicitly closed the overlay, don't auto-open it
+      if (!this.userClosedOverlay && this.notifications.length > 0) {
+        this.showNotificationsOverlay = false;
+      }
     },
     notificationsCountMessage(count) {
       if (count > 1) {
