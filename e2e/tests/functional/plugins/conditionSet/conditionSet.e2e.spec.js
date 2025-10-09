@@ -65,23 +65,30 @@ test.describe.serial('Condition Set CRUD Operations on @localStorage', () => {
     //Navigate to baseURL with injected localStorage
     await page.goto(conditionSetUrl, { waitUntil: 'networkidle' });
 
-    //Assertions on loaded Condition Set in main view. This is a stateful transition step after page.goto()
-    await expect
-      .soft(page.locator('.l-browse-bar__object-name'))
-      .toContainText('Unnamed Condition Set');
+    //Wait for the browse bar element to be visible and ready
+    const browseBarLocator = page.locator('.l-browse-bar__object-name');
+    await browseBarLocator.waitFor({ state: 'visible' });
 
-    //Assertions on loaded Condition Set in Inspector
-    expect.soft(page.locator('_vue=item.name=Unnamed Condition Set')).toBeTruthy();
+    //Assertions on loaded Condition Set in main view. This is a stateful transition step after page.goto()
+    await expect.soft(browseBarLocator).toContainText('Unnamed Condition Set');
+
+    //Assertions on loaded Condition Set in Inspector - wait for element to be visible
+    const inspectorLocator = page.locator('_vue=item.name=Unnamed Condition Set');
+    await inspectorLocator.waitFor({ state: 'attached' });
+    await expect.soft(inspectorLocator).toBeVisible();
 
     //Reload Page
     await Promise.all([page.reload(), page.waitForLoadState('networkidle')]);
 
+    //Wait for the browse bar element to be visible and ready after reload
+    await browseBarLocator.waitFor({ state: 'visible' });
+
     //Re-verify after reload
-    await expect
-      .soft(page.locator('.l-browse-bar__object-name'))
-      .toContainText('Unnamed Condition Set');
-    //Assertions on loaded Condition Set in Inspector
-    expect.soft(page.locator('_vue=item.name=Unnamed Condition Set')).toBeTruthy();
+    await expect.soft(browseBarLocator).toContainText('Unnamed Condition Set');
+
+    //Assertions on loaded Condition Set in Inspector - wait for element to be visible after reload
+    await inspectorLocator.waitFor({ state: 'attached' });
+    await expect.soft(inspectorLocator).toBeVisible();
   });
   test('condition set object can be modified on @localStorage', async ({ page, openmctConfig }) => {
     const { myItemsFolderName } = openmctConfig;
