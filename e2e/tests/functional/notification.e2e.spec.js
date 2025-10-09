@@ -50,7 +50,7 @@ test.describe('Notifications List', () => {
     });
 
     // Verify that there is a button with aria-label "Review 2 Notifications"
-    expect(await page.locator('button[aria-label="Review 2 Notifications"]').count()).toBe(1);
+    await expect(page.locator('button[aria-label="Review 2 Notifications"]')).toHaveCount(1);
 
     // Click on button with aria-label "Review 2 Notifications"
     await page.click('button[aria-label="Review 2 Notifications"]');
@@ -58,21 +58,27 @@ test.describe('Notifications List', () => {
     // Click on button with aria-label="Dismiss notification of Error message"
     await page.click('button[aria-label="Dismiss notification of Error message"]');
 
+    // Wait for the notification count to update after dismissing
+    await expect(page.locator('button[aria-label="Review 1 Notification"]')).toHaveCount(1);
+
     // Verify there is no a notification (listitem) with the text "Error message" since it was dismissed
-    expect(await page.locator('div[role="dialog"] div[role="listitem"]').innerText()).not.toContain(
-      'Error message'
-    );
+    await expect(
+      page.locator('div[role="dialog"] div[role="listitem"]:has-text("Error message")')
+    ).toHaveCount(0);
 
     // Verify there is still a notification (listitem) with the text "Alert message"
-    expect(await page.locator('div[role="dialog"] div[role="listitem"]').innerText()).toContain(
-      'Alert message'
-    );
+    await expect(
+      page.locator('div[role="dialog"] div[role="listitem"]:has-text("Alert message")')
+    ).toHaveCount(1);
 
     // Click on button with aria-label="Dismiss notification of Alert message"
     await page.click('button[aria-label="Dismiss notification of Alert message"]');
 
+    // Wait for the dialog to be removed after all notifications are dismissed
+    await page.waitForSelector('div[role="dialog"]', { state: 'detached' });
+
     // Verify that there is no dialog since the notification overlay was closed automatically after all notifications were dismissed
-    expect(await page.locator('div[role="dialog"]').count()).toBe(0);
+    await expect(page.locator('div[role="dialog"]')).toHaveCount(0);
   });
 });
 
