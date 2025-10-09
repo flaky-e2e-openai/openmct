@@ -80,19 +80,35 @@ test.describe('Gantt Chart', () => {
       .locator('g')
       .filter({ hasText: new RegExp(activity.name) })
       .click();
+
+    // Wait for Activity tab to be available after selection
+    await page.waitForSelector('[role="tablist"] [title="Activity"]', { state: 'visible' });
+
     await selectInspectorTab(page, 'Activity');
 
-    const startDateTime = await page
-      .locator(
-        '.c-inspect-properties__label:has-text("Start DateTime")+.c-inspect-properties__value'
-      )
-      .innerText();
-    const endDateTime = await page
-      .locator('.c-inspect-properties__label:has-text("End DateTime")+.c-inspect-properties__value')
-      .innerText();
-    const duration = await page
-      .locator('.c-inspect-properties__label:has-text("duration")+.c-inspect-properties__value')
-      .innerText();
+    // Wait for inspector properties to be fully rendered with content
+    const startDateTimeLocator = page.locator(
+      '.c-inspect-properties__label:has-text("Start DateTime")+.c-inspect-properties__value'
+    );
+    await expect(startDateTimeLocator).toBeVisible();
+    await expect(startDateTimeLocator).not.toBeEmpty();
+
+    const endDateTimeLocator = page.locator(
+      '.c-inspect-properties__label:has-text("End DateTime")+.c-inspect-properties__value'
+    );
+    await expect(endDateTimeLocator).toBeVisible();
+    await expect(endDateTimeLocator).not.toBeEmpty();
+
+    const durationLocator = page.locator(
+      '.c-inspect-properties__label:has-text("duration")+.c-inspect-properties__value'
+    );
+    await expect(durationLocator).toBeVisible();
+    await expect(durationLocator).not.toBeEmpty();
+
+    // Now safely get text content
+    const startDateTime = await startDateTimeLocator.innerText();
+    const endDateTime = await endDateTimeLocator.innerText();
+    const duration = await durationLocator.innerText();
 
     const expectedStartDate = new Date(activity.start).toISOString();
     const actualStartDate = new Date(startDateTime).toISOString();
